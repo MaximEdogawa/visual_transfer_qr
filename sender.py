@@ -26,8 +26,8 @@ def create_qrcode(header, payload):
         data = b''.join([ header[k].to_bytes(header_size[k], 'big') for k in header ]) + payload
     except OverflowError:
         raise ValueError('The chosen file is too big to be transfered using these QR-code parameters.')
-    content = b32encode(data).decode('ascii').replace('=', '%')
-    return pyqrcodeng.create(content, error=ec_lvl, version=qr_version, mode='alphanumeric', encoding='ascii')
+    content = b32encode(data).decode('utf-8').replace('=', '%')
+    return pyqrcodeng.create(content, error=ec_lvl, version=qr_version, mode='alphanumeric', encoding='utf-8')
 
 def show_image(buf):
     buf.flush()
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     mode = Args.mode.lower() == 'partial'
 
     total_size = getsize(Args.input_file)
-    header_size = { 'mode':1, 'chunk': 7, 'chunks': 7}
+    header_size = { 'mode':1, 'chunk': 2, 'chunks': 2}
     # 2 for alphanumeric, 4 for binary + base32 ratio
     chunk_size = pyqrcodeng.tables.data_capacity[qr_version][ec_lvl][2]*5//40*5
     for v in header_size.values():
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         raise ValueError("The chosen QR-code parameters can't accomodate the header size.")
     total_chunks = (total_size-1)//chunk_size + 1 
     
-    header = { 'mode':1 , 'chunk': 0 , 'chunks': total_chunks }
+    header = { 'mode':1 , 'chunk': 1 , 'chunks': total_chunks }
     headerHash = { 'mode':2 , 'chunk': 1 , 'chunks': 1 }
 
     if total_chunks > 256**header_size['chunk']:

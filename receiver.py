@@ -11,13 +11,17 @@ from pyzbar.pyzbar import ZBarSymbol, decode
 
 
 def decode_data(data):
-    content = b32decode(data.decode('ascii').replace('%', '=').encode('ascii'))
     cursor = 0
     header = {}
-    for k,size in header_size.items():
-        header[k] = int.from_bytes(content[cursor:cursor+size], 'big')
-        cursor += size
-    payload = content[cursor:]
+    print(data)
+    try:
+        content = b32decode(data.decode('ascii').replace('%', '=').encode('ascii'))
+        for k,size in header_size.items():
+            header[k] = int.from_bytes(content[cursor:cursor+size], 'big')
+            cursor += size
+            payload = content[cursor:]
+    except OverflowError:
+            raise ValueError('Qr is not a sequence and not a binary format!')
 
     return header, payload
 
@@ -32,11 +36,11 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1024)
-    #cap.set(cv2.CAP_PROP_FPS, 24)
-    #cap.set(cv2.CAP_PROP_AUTO_WB, 1)
+    cap.set(cv2.CAP_PROP_FPS, 24)
+    cap.set(cv2.CAP_PROP_AUTO_WB, 1)
     return_val, frame = cap.read()
 
-    header_size = { 'mode': 1, 'chunk': 4 , 'size': 8 }
+    header_size = { 'mode': 1, 'chunk': 2 , 'chunks': 2 }
     chunk_size = 0
     total_chunks = 0
     remaining_size = 0
@@ -65,7 +69,7 @@ if __name__ == '__main__':
             chunk_seq = header['chunk']
             chunk_size = len(payload)
             if not total_chunks:
-                total_chunks = (header['size']-1)//chunk_size + 1
+                total_chunks = (header['chunks']-1)//chunk_size + 1
 
             mode = header['mode']
             if not f:
@@ -96,7 +100,7 @@ if __name__ == '__main__':
             if remaining_size and started:
                 remaining_size -= chunk_size
             elif chunk_size:
-                remaining_size = header['size'] - chunk_size
+                remaining_size = header['chunks'] - chunk_size
             f.write(payload)
 
         if started and not chunk_seq:
