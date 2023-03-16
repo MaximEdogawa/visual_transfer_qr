@@ -98,16 +98,17 @@ if __name__ == '__main__':
 
     buffer = BytesIO()
     while 1:
-        with open(Args.input_file, mode='rb') as f:
-            file_str : str = f.read(total_size).decode('utf-8')
-            chunk_hash: bytes = None
-            try:
-                chunk_hash = hashlib.pbkdf2_hmac('sha512', bytes(file_str,'utf-8'),bytes('','utf-8'), PBKDF2_ROUNDS, 64)
-            except Exception as e:
-                print(repr(e))
-            qrcode = create_qrcode(headerHash, chunk_hash)
-            qrcode.png(buffer, scale=1)
-            show_image(buffer)
+        # Enable hash transfer ad a later point problem wit companion app
+        #with open(Args.input_file, mode='rb') as f:
+        #    file_str : str = f.read(total_size).decode('utf-8')
+        #    chunk_hash: bytes = None
+        #    try:
+        #        chunk_hash = hashlib.pbkdf2_hmac('sha512', bytes(file_str,'utf-8'),bytes('','utf-8'), PBKDF2_ROUNDS, 64)
+        #    except Exception as e:
+        #        print(repr(e))
+        #    qrcode = create_qrcode(headerHash, chunk_hash)
+        #    qrcode.png(buffer, scale=1)
+        #    show_image(buffer)
 
         with open(Args.input_file, mode='rb') as f:
             if mode:
